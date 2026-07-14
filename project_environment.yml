@@ -1,0 +1,102 @@
+# =============================================================================
+# project_environment.yml
+# =============================================================================
+# Conda environment specification for the Cell2Location spatial mapping project.
+#
+# NOTE: This environment was NOT used at runtime.
+# The actual analysis was run inside a Singularity container:
+#   singularity pull cell2location.sif docker://quay.io/vitkl/cell2location:latest
+#
+# This file documents the intended environment and is provided as a reference.
+# Installing this environment will FAIL on systems with <12GB storage due to
+# the size of scvi-tools and its dependencies.
+#
+# WHY THE SINGULARITY CONTAINER WAS USED INSTEAD:
+#   The current cell2location v0.1.3 (PyTorch/scvi-tools backend) requires
+#   >12GB of dependencies, which exceeded the HPC project storage quota.
+#   The Singularity container runs cell2location v0.3 (PyMC3/Theano backend),
+#   which is smaller and was the only viable option on our cluster.
+#   Note: v0.3 and v0.1.3 have different APIs — tutorials for v0.1.3
+#   (using RegressionModel and Cell2location classes) do NOT work with v0.3.
+#
+# RUNTIME ENVIRONMENT (what was actually used):
+#   Container:          quay.io/vitkl/cell2location:latest
+#   cell2location:      v0.3 (PyMC3/Theano backend)
+#   Python:             3.7.10
+#   PyMC3:              3.x
+#   Theano:             1.x (requires V100 GPU — incompatible with A100/L40s)
+#   scanpy:             1.7.2
+#   numpy:              1.20.2
+#   scipy:              1.6.2
+#   pandas:             1.2.3
+#   matplotlib:         3.x
+#   seaborn:            0.11.x
+#   bbknn:              1.5.x
+#   anndata:            0.7.5
+#   torch:              1.8.1+cu102
+#   leidenalg:          0.8.3
+#   louvain:            0.7.0
+#
+# If you have sufficient storage and want to try the CURRENT version:
+#   pip install cell2location[tutorials]
+# This installs v0.1.3 with the PyTorch backend.
+# The pipeline scripts would need to be rewritten to use the new API.
+# =============================================================================
+
+name: cell2location_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  - python=3.9
+  - pip
+
+  # Core scientific stack
+  - numpy>=1.21
+  - scipy>=1.7
+  - pandas>=1.3
+  - matplotlib>=3.4
+  - seaborn>=0.11
+
+  # Single-cell analysis
+  - scanpy>=1.8
+  - anndata>=0.7.6
+  - leidenalg>=0.8
+  - louvain>=0.7
+  - bbknn>=1.5
+
+  # Machine learning / GPU
+  - pytorch>=1.9
+  - cudatoolkit=11.3  # adjust to match your GPU driver
+
+  # Bioinformatics
+  - pydeseq2
+
+  # Utilities
+  - tqdm
+  - requests
+  - jupyter
+  - jupyterlab
+  - ipykernel
+
+  - pip:
+    # Cell2location (current version — requires ~12GB+ storage)
+    - cell2location[tutorials]
+
+    # Additional dependencies
+    - scvi-tools>=0.14
+    - pyro-ppl>=1.6
+    - numpyro
+
+    # For reading 10x h5 files
+    - tables
+
+    # For Excel file reading (GBmap metadata)
+    - openpyxl
+    - xlrd
+
+    # For Xenium OME-TIFF reading (optional)
+    - tifffile
+    - imagecodecs
